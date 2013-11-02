@@ -1,0 +1,50 @@
+namespace :puma do
+  desc 'Starts puma'
+  task :start => [:puma_env] do
+    on roles(:app) do
+      within release_path do
+        execute :puma, "-p #{fetch :puma_port} -e #{fetch :puma_env} -S #{fetch :puma_state} #{fetch :puma_extra_options} >> #{fetch :puma_log} 2>&1 &"
+      end
+    end
+  end
+
+  desc 'Stops puma'
+  task :stop => [:puma_env] do
+    on roles(:app) do
+      within release_path do
+        execute :pumactl, "-S #{fetch :puma_state} stop"
+      end
+    end
+  end
+
+  desc 'Restarts puma'
+  task :restart => [:puma_env] do
+    on roles(:app) do
+      within release_path do
+        execute :pumactl, "-S #{fetch :puma_state} restart"
+      end
+    end
+  end
+
+  desc 'Show puma status'
+  task :status => [:puma_env] do
+    on roles(:app) do
+      within release_path do
+        execute :pumactl, "-S #{fetch :puma_state} status"
+      end
+    end
+  end
+
+  task :puma_env do
+    # we want to change rbenv_map_bins if we're using capistrano/rbenv
+    bins = fetch :rbenv_map_bins, []
+    %w(puma pumactl).each { |bin| bins << bin }
+    set :rbenv_map_bins, bins
+
+    set :puma_env, (fetch(:puma_env) || fetch(:rails_env) || fetch(:stage))
+    set :puma_log, (fetch(:puma_log) || shared_path.join('log', 'puma.log'))
+    set :puma_port, (fetch(:puma_port) || 3000)
+    set :puma_state, (fetch(:puma_state) || shared_path.join('tmp', 'pids', 'puma.state'))
+    set :puma_extra_options, (fetch(:puma_extra_options) || '')
+  end
+end
