@@ -1,0 +1,1 @@
+load 'capistrano/tasks/puma.cap'

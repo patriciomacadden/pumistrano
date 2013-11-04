@@ -32,7 +32,7 @@ $ gem install pumistrano
 Require `pumistrano` in your `Capfile`:
 
 ```ruby
-require 'pumistrano'
+require 'capistrano/puma'
 ```
 
 And enjoy!
